@@ -12,7 +12,6 @@ module.exports = {
     'airbnb',
     'airbnb/hooks',
     'plugin:react/recommended',
-    'plugin:unicorn/recommended',
     'plugin:promise/recommended',
     'plugin:@typescript-eslint/recommended',
   ],
