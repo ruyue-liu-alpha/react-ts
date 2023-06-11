@@ -20,7 +20,7 @@ module.exports = {
     ecmaFeatures: {
       jsx: true,
     },
-    ecmaVersion: 12,
+    // ecmaVersion: 10,
     sourceType: 'module',
   },
   settings: {
@@ -28,10 +28,16 @@ module.exports = {
       node: {
         extensions: ['.tsx', '.ts', '.js', '.json'],
       },
+      typescript: {},
     },
   },
   plugins: ['react', 'unicorn', 'promise', '@typescript-eslint'],
   rules: {
+    'import/no-extraneous-dependencies': 'off',
+    '@typescript-eslint/no-var-requires': 0,
+    'global-require': 0,
+    'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
+    indent: 'off',
     'import/extensions': [
       ERROR,
       'ignorePackages',
