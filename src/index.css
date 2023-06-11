@@ -1,0 +1,13 @@
+.computed-one {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app {
+  width: 200px;
+}
+
+.useless {
+  background-color: aqua;
+}

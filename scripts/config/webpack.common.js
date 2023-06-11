@@ -1,10 +1,19 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+// const CopyPlugin = require('copy-webpack-plugin');
+const WebpackBar = require('webpackbar');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const webpack = require('webpack');
+// const HardSourceWebpackPlugin = require('hard-source-webpack-plugin');
+// css 文件单独打包
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+
 const { PROJECT_PATH, isDev } = require('../constant');
 
 const getCssLoaders = (importLoaders) => [
-  'style-loader',
+  isDev ? 'style-loader' : MiniCssExtractPlugin.loader,
   {
     loader: 'css-loader',
     options: {
@@ -43,6 +52,8 @@ module.exports = {
   output: {
     filename: `js/[name]${isDev ? '' : '.[hash:8]'}.js`,
     path: path.resolve(PROJECT_PATH, './dist'),
+    sourceMapFilename: '[name].[hash:8].map',
+    chunkFilename: '[id].[hash:8].js',
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -66,6 +77,36 @@ module.exports = {
             useShortDoctype: true,
           },
     }),
+    // error:文件名重复
+    // new CopyPlugin({
+    //   patterns: [
+    //     {
+    //       context: path.resolve(PROJECT_PATH, './public'),
+    //       from: '*',
+    //       to: path.resolve(PROJECT_PATH, './dist'),
+    //       toType: 'dir',
+    //     },
+    //   ],
+    // }),
+    new WebpackBar({
+      name: isDev ? '正在启动' : '正在打包',
+      color: '#fa8c16',
+    }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: path.resolve(PROJECT_PATH, './tsconfig.json'),
+      },
+    }),
+    // TypeError: Cannot read properties of undefined (reading 'tap')
+    // new HardSourceWebpackPlugin(),
+    // 局部热更新
+    new webpack.HotModuleReplacementPlugin(),
+    !isDev &&
+      new MiniCssExtractPlugin({
+        filename: 'css/[name].[contenthash:8].css',
+        chunkFilename: 'css/[name].[contenthash:8].css',
+        ignoreOrder: false,
+      }),
   ],
   module: {
     rules: [
@@ -119,11 +160,6 @@ module.exports = {
     ],
   },
   resolve: {
-    // plugins: [
-    //   new TsconfigPathsPlugin({
-    //     configFile: './tsconfig.json',
-    //   }),
-    // ],
     alias: {
       Src: path.resolve(PROJECT_PATH, './src'),
       Components: path.resolve(PROJECT_PATH, './src/components'),
@@ -131,5 +167,22 @@ module.exports = {
     },
 
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
+  },
+  externals: {
+    react: 'React',
+    'react-dom': 'ReactDOM',
+  },
+  optimization: {
+    minimize: !isDev,
+    minimizer: [
+      !isDev &&
+        new TerserPlugin({
+          extractComments: false,
+          terserOptions: {
+            compress: { pure_funcs: ['console.log'] },
+          },
+        }),
+      !isDev && new OptimizeCssAssetsPlugin(),
+    ].filter(Boolean),
   },
 };
